@@ -29,7 +29,6 @@ jobs:
         with:
           node-version: 20
           # Remove cache since package-lock.json doesn't exist yet
-
       - name: Install dependencies
         run: npm install --no-audit --prefer-offline
 
