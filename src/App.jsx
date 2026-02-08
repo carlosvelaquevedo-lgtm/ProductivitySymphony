@@ -2205,7 +2205,73 @@ export default function App() {
 
           {/* Data View */}
           {activeView === 'data' && (
-            // ... (your existing Data view code)
+            <div className="space-y-6 max-w-7xl mx-auto">
+              <div><h1 className="text-2xl font-semibold text-slate-900">Data</h1><p className="text-slate-500 text-sm mt-1">Complete data view</p></div>
+              
+              <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                  <h3 className="font-semibold text-slate-900 flex items-center gap-2"><FolderKanban size={18} /> Projects ({projects.length})</h3>
+                  <button 
+                    onClick={() => downloadCSV(
+                      'all-projects-data',
+                      ['ID', 'Name', 'Portfolio', 'Category', 'PM', 'Project Status', 'Finance', 'Health', 'Risk', 'Benefit', 'Realized', 'Progress'],
+                      projects.map(p => [
+                        p.id,
+                        p.name,
+                        portfolios.find(pf => pf.id === p.portfolioId)?.name || '',
+                        p.category,
+                        p.pm,
+                        p.projectStatus,
+                        p.financeApproval,
+                        p.health,
+                        p.risk,
+                        p.benefitProjection,
+                        p.actualBenefit,
+                        `${p.progress}%`
+                      ])
+                    )}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm text-sky-600 hover:text-sky-700 font-medium border border-sky-200 rounded-lg hover:bg-sky-50 transition-colors"
+                  >
+                    <Download size={14} />
+                    Download CSV
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 border-b border-slate-100">
+                      <tr>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">#</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Name</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Portfolio</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Category</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">PM</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Project Status</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Finance</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Health</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Benefit</th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Realized</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {projects.map(p => (
+                        <tr key={p.id} className="hover:bg-slate-50">
+                          <td className="px-3 py-2">#{p.id}</td>
+                          <td className="px-3 py-2 font-medium">{p.name}</td>
+                          <td className="px-3 py-2">{portfolios.find(pf => pf.id === p.portfolioId)?.name || ''}</td>
+                          <td className="px-3 py-2">{p.category}</td>
+                          <td className="px-3 py-2">{p.pm}</td>
+                          <td className="px-3 py-2"><StatusPill status={p.projectStatus} type="project" /></td>
+                          <td className="px-3 py-2"><StatusPill status={p.financeApproval} type="finance" /></td>
+                          <td className="px-3 py-2"><HealthDot health={p.health} /></td>
+                          <td className="px-3 py-2 font-semibold">{fmt(p.benefitProjection)}</td>
+                          <td className="px-3 py-2 text-emerald-600">{fmt(p.actualBenefit)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Floating AI Widget */}
