@@ -1818,4 +1818,447 @@ export default function App() {
                     {fmt(projects.reduce((sum, p) => sum + p.benefitProjection, 0) - projects.reduce((sum, p) => sum + p.actualBenefit, 0))}
                   </p>
                   <p className="text-sm opacity-90 mt-1">Remaining Benefits</p>
-                  <div className="
+                  <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl p-6 text-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <Activity size={24} className="opacity-80" />
+                    <TrendingUp size={20} className="opacity-60" />
+                  </div>
+                  <p className="text-3xl font-bold">
+                    {fmt(projects.reduce((sum, p) => sum + p.benefitProjection, 0) - projects.reduce((sum, p) => sum + p.actualBenefit, 0))}
+                  </p>
+                  <p className="text-sm opacity-90 mt-1">Remaining Benefits</p>
+                  <div className="mt-3 pt-3 border-t border-white/20">
+                    <p className="text-xs opacity-75">To be realized</p>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-6 text-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <Calendar size={24} className="opacity-80" />
+                    <Clock size={20} className="opacity-60" />
+                  </div>
+                  <p className="text-3xl font-bold">{selectedYear}</p>
+                  <p className="text-sm opacity-90 mt-1">Current Fiscal Year</p>
+                  <div className="mt-3 pt-3 border-t border-white/20">
+                    <p className="text-xs opacity-75">YTD Performance</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Charts Row */}
+              <div className="grid lg:grid-cols-2 gap-6">
+                {/* Cascade/Waterfall Chart */}
+                <div className="bg-white rounded-xl p-6 border border-slate-200">
+                  <h3 className="font-semibold text-slate-900 mb-4">Benefits Cascade Analysis</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <ComposedChart data={[
+                      { name: 'Projected', value: projects.reduce((sum, p) => sum + p.benefitProjection, 0), fill: '#0ea5e9' },
+                      { name: 'Realized', value: projects.reduce((sum, p) => sum + p.actualBenefit, 0), fill: '#10b981' },
+                      { name: 'Variance', value: projects.reduce((sum, p) => sum + p.benefitProjection, 0) - projects.reduce((sum, p) => sum + p.actualBenefit, 0), fill: '#f59e0b' },
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
+                      <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(v) => fmt(v)} />
+                      <Tooltip formatter={(value) => fmt(value)} />
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                        {[0, 1, 2].map((index) => (
+                          <Cell key={`cell-${index}`} fill={index === 0 ? '#0ea5e9' : index === 1 ? '#10b981' : '#f59e0b'} />
+                        ))}
+                      </Bar>
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Monthly Trend */}
+                <div className="bg-white rounded-xl p-6 border border-slate-200">
+                  <h3 className="font-semibold text-slate-900 mb-4">Monthly Benefits Trend ({selectedYear})</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={benefitsChartData}>
+                      <defs>
+                        <linearGradient id="benefitGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                      <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} />
+                      <YAxis stroke="#94a3b8" fontSize={11} />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="forecast" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="5 5" fill="none" />
+                      <Area type="monotone" dataKey="actual" stroke="#10b981" strokeWidth={2} fill="url(#benefitGradient)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Project Benefits Table */}
+              <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="px-5 py-4 bg-slate-50 border-b border-slate-200">
+                  <h3 className="font-semibold text-slate-900">Project Benefits Breakdown</h3>
+                </div>
+                <table className="w-full">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Project</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Category</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Projected</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Realized</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Variance</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {projects.map(p => {
+                      const variance = p.actualBenefit - p.benefitProjection;
+                      const variancePercent = p.benefitProjection > 0 ? Math.round((variance / p.benefitProjection) * 100) : 0;
+                      return (
+                        <tr key={p.id} className="hover:bg-slate-50">
+                          <td className="px-4 py-3">
+                            <p className="text-sm font-medium text-slate-900">{p.name}</p>
+                            <p className="text-xs text-slate-500">{p.pm}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="text-sm text-slate-600">{p.category}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="text-sm font-semibold text-slate-900">{fmt(p.benefitProjection)}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="text-sm font-semibold text-emerald-600">{fmt(p.actualBenefit)}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-sm font-semibold ${variance >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                {variance >= 0 ? '+' : ''}{fmt(variance)}
+                              </span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${variance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                {variancePercent >= 0 ? '+' : ''}{variancePercent}%
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <StatusPill status={p.projectStatus} type="project" />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Reports View - COMPLETE WITH ALL GRAPHICS */}
+          {activeView === 'reports' && (
+            <div className="space-y-6 max-w-7xl mx-auto">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-semibold text-slate-900">Reports & Analytics</h1>
+                  <p className="text-slate-500 text-sm mt-1">Comprehensive portfolio insights</p>
+                </div>
+                <button
+                  onClick={() => {
+                    const exportData = projects.map(p => ({
+                      ID: p.id,
+                      Name: p.name,
+                      Portfolio: portfolios.find(pf => pf.id === p.portfolioId)?.name || '',
+                      Category: p.category,
+                      PM: p.pm,
+                      'Project Status': p.projectStatus,
+                      'Finance Approval': p.financeApproval,
+                      Health: p.health,
+                      'Benefit Projection': p.benefitProjection,
+                      'Actual Benefit': p.actualBenefit,
+                      Variance: p.actualBenefit - p.benefitProjection,
+                      'Variance %': p.benefitProjection > 0 ? Math.round(((p.actualBenefit - p.benefitProjection) / p.benefitProjection) * 100) : 0,
+                      'Progress %': p.progress,
+                      Risk: p.risk
+                    }));
+                    exportToCSV(exportData, 'portfolio_report');
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors text-sm"
+                >
+                  <FileDown size={14} />
+                  Export Full Report
+                </button>
+              </div>
+
+              {/* Executive Summary */}
+              <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-8 text-white">
+                <h2 className="text-2xl font-bold mb-6">Executive Summary</h2>
+                <div className="grid md:grid-cols-4 gap-6">
+                  <div>
+                    <p className="text-3xl font-bold">{projects.length}</p>
+                    <p className="text-slate-300 text-sm mt-1">Total Projects</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold">{fmt(projects.reduce((sum, p) => sum + p.benefitProjection, 0))}</p>
+                    <p className="text-slate-300 text-sm mt-1">Total Value</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold">{Math.round((projects.reduce((sum, p) => sum + p.actualBenefit, 0) / projects.reduce((sum, p) => sum + p.benefitProjection, 0)) * 100)}%</p>
+                    <p className="text-slate-300 text-sm mt-1">Realization Rate</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold">{Math.round(projects.reduce((sum, p) => sum + p.progress, 0) / projects.length)}%</p>
+                    <p className="text-slate-300 text-sm mt-1">Avg Completion</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Portfolio Health Dashboard */}
+              <div className="grid lg:grid-cols-3 gap-6">
+                <div className="bg-white rounded-xl p-6 border border-slate-200">
+                  <h3 className="font-semibold text-slate-900 mb-4">Project Health Distribution</h3>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Green', value: projects.filter(p => p.health === 'green').length, color: '#10b981' },
+                          { name: 'Yellow', value: projects.filter(p => p.health === 'yellow').length, color: '#f59e0b' },
+                          { name: 'Red', value: projects.filter(p => p.health === 'red').length, color: '#ef4444' },
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={70}
+                        dataKey="value"
+                      >
+                        <Cell fill="#10b981" />
+                        <Cell fill="#f59e0b" />
+                        <Cell fill="#ef4444" />
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="grid grid-cols-3 gap-2 mt-4">
+                    <div className="text-center">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full mx-auto mb-1" />
+                      <p className="text-lg font-bold text-slate-900">{projects.filter(p => p.health === 'green').length}</p>
+                      <p className="text-xs text-slate-500">Green</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-3 h-3 bg-amber-500 rounded-full mx-auto mb-1" />
+                      <p className="text-lg font-bold text-slate-900">{projects.filter(p => p.health === 'yellow').length}</p>
+                      <p className="text-xs text-slate-500">Yellow</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-3 h-3 bg-red-500 rounded-full mx-auto mb-1" />
+                      <p className="text-lg font-bold text-slate-900">{projects.filter(p => p.health === 'red').length}</p>
+                      <p className="text-xs text-slate-500">Red</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-6 border border-slate-200">
+                  <h3 className="font-semibold text-slate-900 mb-4">Finance Approval Status</h3>
+                  <div className="space-y-3">
+                    {FINANCE_APPROVAL_STATUSES.map(status => {
+                      const count = projects.filter(p => p.financeApproval === status).length;
+                      const percent = Math.round((count / projects.length) * 100);
+                      return (
+                        <div key={status}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm text-slate-600">{status}</span>
+                            <span className="text-sm font-semibold text-slate-900">{count}</span>
+                          </div>
+                          <div className="w-full bg-slate-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full ${
+                                status === 'Approved' ? 'bg-emerald-500' :
+                                status === 'Pending' ? 'bg-amber-500' :
+                                status === 'Rejected' ? 'bg-red-500' : 'bg-slate-400'
+                              }`}
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-6 border border-slate-200">
+                  <h3 className="font-semibold text-slate-900 mb-4">Project Lifecycle Stage</h3>
+                  <div className="space-y-3">
+                    {PROJECT_STATUSES.map(status => {
+                      const count = projects.filter(p => p.projectStatus === status).length;
+                      const percent = Math.round((count / projects.length) * 100);
+                      return (
+                        <div key={status}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs text-slate-600">{status}</span>
+                            <span className="text-sm font-semibold text-slate-900">{count}</span>
+                          </div>
+                          <div className="w-full bg-slate-200 rounded-full h-1.5">
+                            <div className="bg-sky-500 h-1.5 rounded-full" style={{ width: `${percent}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Category Performance */}
+              <div className="bg-white rounded-xl p-6 border border-slate-200">
+                <h3 className="font-semibold text-slate-900 mb-4">Performance by Category</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={categories.map(cat => {
+                    const catProjects = projects.filter(p => p.category === cat);
+                    return {
+                      category: cat,
+                      projected: catProjects.reduce((sum, p) => sum + p.benefitProjection, 0),
+                      realized: catProjects.reduce((sum, p) => sum + p.actualBenefit, 0),
+                    };
+                  })}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis dataKey="category" stroke="#94a3b8" fontSize={11} angle={-45} textAnchor="end" height={80} />
+                    <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(v) => fmt(v)} />
+                    <Tooltip formatter={(value) => fmt(value)} />
+                    <Bar dataKey="projected" fill="#0ea5e9" name="Projected" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="realized" fill="#10b981" name="Realized" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Risk Analysis */}
+              <div className="bg-white rounded-xl p-6 border border-slate-200">
+                <h3 className="font-semibold text-slate-900 mb-4">Risk Profile Analysis</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-full" />
+                      <span className="font-semibold text-red-900">High Risk</span>
+                    </div>
+                    <p className="text-2xl font-bold text-red-600 mb-1">{projects.filter(p => p.risk === 'high').length}</p>
+                    <p className="text-xs text-red-700">Requires immediate attention</p>
+                    <div className="mt-3 space-y-1">
+                      {projects.filter(p => p.risk === 'high').slice(0, 3).map(p => (
+                        <p key={p.id} className="text-xs text-red-800 truncate">• {p.name}</p>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-3 h-3 bg-amber-500 rounded-full" />
+                      <span className="font-semibold text-amber-900">Medium Risk</span>
+                    </div>
+                    <p className="text-2xl font-bold text-amber-600 mb-1">{projects.filter(p => p.risk === 'medium').length}</p>
+                    <p className="text-xs text-amber-700">Monitor closely</p>
+                  </div>
+                  
+                  <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full" />
+                      <span className="font-semibold text-emerald-900">Low Risk</span>
+                    </div>
+                    <p className="text-2xl font-bold text-emerald-600 mb-1">{projects.filter(p => p.risk === 'low').length}</p>
+                    <p className="text-xs text-emerald-700">On track</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Portfolio Summary */}
+              <div className="grid lg:grid-cols-3 gap-6">
+                {portfolios.map(portfolio => {
+                  const pfProjects = projects.filter(p => p.portfolioId === portfolio.id);
+                  const pfValue = pfProjects.reduce((sum, p) => sum + p.benefitProjection, 0);
+                  const pfRealized = pfProjects.reduce((sum, p) => sum + p.actualBenefit, 0);
+                  
+                  return (
+                    <div key={portfolio.id} className="bg-white rounded-xl p-6 border-2 hover:shadow-lg transition-all" style={{ borderColor: portfolio.color }}>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: portfolio.color + '20' }}>
+                          <Folder size={24} style={{ color: portfolio.color }} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-slate-900">{portfolio.name}</h3>
+                          <p className="text-xs text-slate-500">{portfolio.owner}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-xs text-slate-500 mb-1">Projects</p>
+                          <p className="text-2xl font-bold text-slate-900">{pfProjects.length}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 mb-1">Total Value</p>
+                          <p className="text-lg font-semibold text-slate-900">{fmt(pfValue)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 mb-1">Realized</p>
+                          <div className="flex items-baseline gap-2">
+                            <p className="text-lg font-semibold text-emerald-600">{fmt(pfRealized)}</p>
+                            <span className="text-xs text-slate-500">({pfValue > 0 ? Math.round((pfRealized / pfValue) * 100) : 0}%)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Data View */}
+          {activeView === 'data' && (
+            // ... (your existing Data view code)
+          )}
+
+          {/* Floating AI Widget */}
+          {showEmbracy && (
+            <div className="fixed bottom-6 right-6 w-96 bg-white rounded-2xl shadow-2xl border-2 border-violet-200 z-50">
+              <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-3 rounded-t-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2 text-white">
+                  <Bot size={20} />
+                  <span className="font-semibold">Embracy</span>
+                </div>
+                <button onClick={() => setShowEmbracy(false)} className="text-white/80 hover:text-white">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="h-96 overflow-y-auto p-4 space-y-3 bg-slate-50">
+                {aiMessages.slice(-5).map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
+                      msg.role === 'user' ? 'bg-sky-600 text-white' : 'bg-white border border-violet-100'
+                    }`}>
+                      {msg.content.substring(0, 100)}{msg.content.length > 100 ? '...' : ''}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="p-3 border-t border-slate-200">
+                <button 
+                  onClick={() => setActiveView('embracy')}
+                  className="w-full py-2 text-sm text-violet-600 hover:text-violet-700 font-medium"
+                >
+                  Open Full Chat →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Floating AI Button (when widget closed) */}
+          {!showEmbracy && (
+            <button
+              onClick={() => setShowEmbracy(true)}
+              className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center z-40"
+            >
+              <Bot size={24} />
+            </button>
+          )}
+
+        </div>
+      </main>
+
+      {/* Modals */}
+      {showCreateProject && <CreateProjectModal onClose={() => setShowCreateProject(false)} onSubmit={handleCreateProject} portfolios={portfolios} />}
+      {showCreateIdea && <CreateIdeaModal onClose={() => setShowCreateIdea(false)} onSubmit={handleCreateIdea} portfolios={portfolios} />}
+      {showPortfolios && <PortfolioModal portfolios={portfolios} onClose={() => setShowPortfolios(false)} onCreate={handleCreatePortfolio} onUpdate={() => {}} onDelete={handleDeletePortfolio} />}
+    </div>
+  );
+}
