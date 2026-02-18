@@ -14,6 +14,19 @@ A modern, AI-powered project and idea management platform built with React, Vite
 
 ## ✨ Features
 
+### 🎉 New in v2.0
+- **✏️ Edit Projects & Ideas** - Full CRUD operations with validation
+- **🗑️ Delete with Confirmation** - Safe deletion with warning dialogs
+- **🔔 Toast Notifications** - Beautiful user feedback system
+- **✅ Form Validation** - Comprehensive input validation and error handling
+- **🧪 Testing Framework** - Vitest setup with testing utilities
+- **♿ Enhanced Accessibility** - WCAG 2.1 AA compliance improvements
+- **📚 JSDoc Documentation** - Full type definitions and documentation
+- **🔐 Security Enhancements** - XSS prevention and input sanitization
+- **🏗️ Modular Architecture** - Refactored from monolithic to clean components
+
+See [ENHANCEMENTS.md](ENHANCEMENTS.md) for detailed v2.0 changes.
+
 ### 📊 Portfolio Management
 - **12 Active Projects** tracked across 6 stages
 - **Real-time Health Monitoring** (Green/Yellow/Red indicators)
