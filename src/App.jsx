@@ -595,7 +595,7 @@ const CreateIdeaModal = ({ onClose, onSubmit, portfolios }) => {
                 <div key={key}>
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-xs font-medium text-slate-700">{criterion.label} ({(criterion.weight * 100).toFixed(0)}%)</label>
-                    <span className="text-sm font-semibold text-slate-900">{formData.scores[key]}/{criterion.max}</span>
+                    <span className="text-sm font-semibold text-slate-900">{`${formData.scores[key]}/${criterion.max}`}</span>
                   </div>
                   <input type="range" min="0" max={criterion.max} value={formData.scores[key]} onChange={(e) => setFormData({ ...formData, scores: {...formData.scores, [key]: parseInt(e.target.value)} })} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-600" />
                 </div>
@@ -1810,15 +1810,6 @@ export default function App() {
                 </div>
 
                 <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl p-6 text-white">
-                  <div className="flex items-center justify-between mb-3">
-                    <Activity size={24} className="opacity-80" />
-                    <TrendingUp size={20} className="opacity-60" />
-                  </div>
-                  <p className="text-3xl font-bold">
-                    {fmt(projects.reduce((sum, p) => sum + p.benefitProjection, 0) - projects.reduce((sum, p) => sum + p.actualBenefit, 0))}
-                  </p>
-                  <p className="text-sm opacity-90 mt-1">Remaining Benefits</p>
-                  <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl p-6 text-white">
                   <div className="flex items-center justify-between mb-3">
                     <Activity size={24} className="opacity-80" />
                     <TrendingUp size={20} className="opacity-60" />
